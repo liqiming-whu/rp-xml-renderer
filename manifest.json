@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "toolpkg_id": "com.operit.rp_xml_renderer",
+  "version": "2.3.2",
+  "api_version": "1.0.0",
+  "main": "dist/main.js",
+  "display_name": {
+    "zh": "RP 标签渲染器 (选项/构建/变量)",
+    "en": "RP XML Tag Renderer (Choices/Build/Variables)"
+  },
+  "description": {
+    "zh": "RP 标签渲染、正则替换与独立 JS 动态注入：随机码、时间、自定义、每日主题＋微事件四套预设，自定义时区与试运行诊断，仅注入脚本返回文本。",
+    "en": "RP rendering, regex replacement and isolated JavaScript prompt injection: random codes, time, custom scripts and daily themes with micro-events; configurable time zones and dry-run diagnostics."
+  },
+  "enabled_by_default": true,
+  "subpackages": [],
+  "resources": [
+    {
+      "key": "rp_js_runner_v230",
+      "path": "resources/rp-js-runner-v230.dex",
+      "mime": "application/octet-stream"
+    }
+  ]
+}

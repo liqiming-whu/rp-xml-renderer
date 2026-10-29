@@ -1,0 +1,24 @@
+# Build outputs and downloaded build-only tools
+/dist/
+/build-tools/
+*.toolpkg
+*.zip
+__pycache__/
+*.pyc
+node_modules/
+# Historical backups and local device reports are not source assets
+/backups/
+/deployment-*.json
+/test-results.txt
+# One-off migration scripts retained only in Android history
+/update-v*.py
+# No local credentials or preference snapshots
+.env
+.env.*
+*.keystore
+*.jks
+*preferences-snapshot*
+
+*.bundle
+/SHA256SUMS
+/release-verification*.json
