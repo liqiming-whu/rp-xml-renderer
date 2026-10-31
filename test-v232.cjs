@@ -11,5 +11,5 @@ t('legacy three-script migration is memory-only and preserves selection',()=>{co
 t('fresh dynamic injection remains off and unbound',()=>{const c=IM.defaultInjectionConfig();A.equal(c.enabled,false);A.deepEqual(c.cardIds,[]);});
 t('defaults allocate independent role lists',()=>{const a=M.defaults(),b=M.defaults();a.rules[0].cardIds.push('fixture-card');A.deepEqual(b.rules[0].cardIds,[]);A.deepEqual(a.rules[1].cardIds,[]);});
 t('production source and bundle JS contain no hardcoded UUID',()=>{const uuid=/[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}/i;for(const dir of ['src','dist'])for(const name of fs.readdirSync(path.join(__dirname,dir))){if(!/\.(ts|js)$/.test(name))continue;A.ok(!uuid.test(fs.readFileSync(path.join(__dirname,dir,name),'utf8')),name);}});
-t('public release version matches settings labels',()=>{A.equal(require('./manifest.json').version,'2.3.2');for(const name of ['settings','injection-settings'])A.ok(fs.readFileSync(path.join(__dirname,'dist',name+'.js'),'utf8').includes('v2.3.2'));});
+t('public release version matches settings labels',()=>{const version=require('./manifest.json').version;A.match(version,/^2\.3\.\d+$/);for(const name of ['settings','injection-settings'])A.ok(fs.readFileSync(path.join(__dirname,'dist',name+'.js'),'utf8').includes('v'+version));});
 console.log(JSON.stringify({suite:'v2.3.2-public',passed,total:passed}));

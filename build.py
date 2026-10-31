@@ -5,7 +5,7 @@ subprocess.run(['python3',str(root/'build_native.py')],stdin=subprocess.DEVNULL,
 subprocess.run(['tsc','-p',str(root/'tsconfig.json'),'--pretty','false'],stdin=subprocess.DEVNULL,check=True,timeout=30)
 subprocess.run(['node',str(root/'export-examples.cjs')],stdin=subprocess.DEVNULL,check=True,timeout=15)
 outputs=[]
-for suite in ['test.cjs','test-v21.cjs','test-v23.cjs','test-v231.cjs','test-examples.cjs','test-v232.cjs']:
+for suite in ['test.cjs','test-v21.cjs','test-v23.cjs','test-v231.cjs','test-examples.cjs','test-v232.cjs','test-v233.cjs']:
  result=subprocess.run(['node',str(root/suite)],stdin=subprocess.DEVNULL,capture_output=True,text=True,timeout=15)
  outputs.append(result.stdout)
  if result.returncode:

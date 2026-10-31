@@ -24,7 +24,7 @@ export default function InjectionSettings(ctx:any,onBack:()=>void,page:ReturnTyp
  const toggle=(label:string,checked:boolean,onCheckedChange:any)=>U.Row({fillMaxWidth:true,verticalAlignment:'center'},[U.Text({text:label,weight:1}),U.Switch({checked,onCheckedChange,enabled:!busy})]);
  const reload=async()=>{try{read(await cards());}catch(e){const f=commandFailure(e);setStatus(f.code+'：'+f.message);}};
  const trial=async(execute:boolean)=>{if(busy)return;setReport({busy:true});const out=await tryInjectionScript(c.scripts[c.preset],c.timeZone,execute);setReport(out);setStatus(execute?'试运行结束；未保存、未注入。':'检查结束；未执行用户脚本。');};
- const nodes:any[]=[U.Text({text:'动态 JS 注入',style:'headlineSmall'}),U.Text({text:'v2.3.2 · 随机码 / 时间 / 自定义 / 每日主题＋微事件',style:'bodySmall',color:'onSurfaceVariant'}),U.Text({text:'只注入 JS return 的字符串，不添加标签、标题、编号或说明。换行与内容完全由脚本控制；返回空字符串则本轮不注入。',style:'bodySmall'})];
+ const nodes:any[]=[U.Text({text:'动态 JS 注入',style:'headlineSmall'}),U.Text({text:'v2.3.3 · 随机码 / 时间 / 自定义 / 每日主题＋微事件',style:'bodySmall',color:'onSurfaceVariant'}),U.Text({text:'只注入 JS return 的字符串，不添加标签、标题、编号或说明。换行与内容完全由脚本控制；返回空字符串则本轮不注入。',style:'bodySmall'})];
  if(status)nodes.push(U.Text({text:status,color:'primary'}));
  if(!data.ready)nodes.push(U.Text({text:status?'配置读取未完成，请重试。':'正在读取配置…'}),button('重新读取',reload));
  else{

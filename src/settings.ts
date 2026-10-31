@@ -22,7 +22,7 @@ export default function SettingsScreen(ctx:any){
  const button=(text:string,onClick:any)=>U.OutlinedButton({text,onClick,fillMaxWidth:true});
  const start=(r:Rule)=>{setEdit(JSON.parse(JSON.stringify(r)));setPreview(null);setSample('<'+r.tag+'>\n'+(r.validator==='patch'?'<JSONPatch>\n[]\n</JSONPatch>':r.mode==='choices'?'行动一 结果一\n行动二 结果二':'**示例内容**\n正文段落')+'\n</'+r.tag+'>');};
  const persist=()=>{try{const next=save(s);setData({...data,settings:next});setStatus('已保存。请点“应用设置”，新增标签需重启 Operit；已有消息请重新进入对话刷新。');}catch(e){setStatus(String(e));}};
- const nodes:any[]=[U.Text({text:edit?'编辑标签规则':'RP 标签渲染配置',style:'headlineSmall'}),U.Text({text:'v2.3.2 · 标签渲染 / 正则替换 / 动态 JS',style:'bodySmall',color:'onSurfaceVariant'})];
+ const nodes:any[]=[U.Text({text:edit?'编辑标签规则':'RP 标签渲染配置',style:'headlineSmall'}),U.Text({text:'v2.3.3 · 标签渲染 / 正则替换 / 动态 JS',style:'bodySmall',color:'onSurfaceVariant'})];
  if(status)nodes.push(U.Text({text:status,color:'primary'}));
  if(!data.ready)nodes.push(U.Text({text:'正在读取配置…'}));
  else if(!edit){

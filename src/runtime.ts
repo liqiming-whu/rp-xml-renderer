@@ -15,7 +15,58 @@ export function requestReload(){
 export async function cards():Promise<{id:string;name:string}[]>{const m=Java.type('com.ai.assistance.operit.data.preferences.CharacterCardManager').getInstance(Java.getApplicationContext());const xs=await m.callSuspend('getAllCharacterCards');return xs.map((x:any)=>({id:String(x.getId()),name:String(x.getName())}));}
 // Matching the complete XML block against source messages is a conservative compatibility
 // adapter, not authoritative per-render metadata. Duplicate/unknown ownership fails open.
-export function isStandalone(content:string,xml:string){let at=content.indexOf(xml);if(at<0)return false;const before=content.slice(0,at);const after=content.slice(at+xml.length);if(at>0&&!/\n[ \t]*$/.test(before))return false;if(after&&!/^[ \t]*(?:\r?\n|$)/.test(after))return false;const fences=before.match(/^\s*```/gm)||[];if(fences.length%2)return false;for(const t of ['think','thinking','tool','tool_result','html','details']){if(before.toLowerCase().lastIndexOf('<'+t+'>')>before.toLowerCase().lastIndexOf('</'+t+'>'))return false;}return true;}
+// A fully closed leading reasoning prefix is not part of the visible body.
+// Compute an offset only: never alter stored content or the XML used for lookup.
+function leadingThinkingEnd(content:string):number {
+ let end=0;
+ for(;;){
+  const open=/^\s*<(think|thinking)\s*>/i.exec(content.slice(end));
+  if(!open)return end;
+  const stack=[open[1].toLowerCase()];
+  const tokens=/<(\/?)(think|thinking)\s*>/gi;
+  tokens.lastIndex=end+open[0].length;
+  let token:RegExpExecArray|null;let closed=false;
+  while((token=tokens.exec(content))){
+   const tag=token[2].toLowerCase();
+   if(token[1]){if(stack.pop()!==tag)return end;}
+   else stack.push(tag);
+   if(!stack.length){end=tokens.lastIndex;closed=true;break;}
+  }
+  if(!closed)return end;
+ }
+}
+function insideFence(text:string):boolean {
+ let marker='';let length=0;
+ for(const line of text.split(/\r?\n/)){
+  const m=/^[ \t]*(`{3,}|~{3,})(.*)$/.exec(line);
+  if(!m)continue;
+  if(!marker){marker=m[1][0];length=m[1].length;}
+  else if(m[1][0]===marker&&m[1].length>=length&&!m[2].trim()){marker='';length=0;}
+ }
+ return !!marker;
+}
+function insideProtectedContainer(text:string):boolean {
+ const tokens=/<(\/?)(think|thinking|tool|tool_result|html|details)(?:\s[^<>]*)?>/gi;
+ const stack:string[]=[];let token:RegExpExecArray|null;
+ while((token=tokens.exec(text))){
+  if(/\/\s*>$/.test(token[0]))continue;
+  const tag=token[2].toLowerCase();
+  if(token[1]){if(stack.pop()!==tag)return true;}
+  else stack.push(tag);
+ }
+ return stack.length>0;
+}
+export function isStandalone(content:string,xml:string){
+ const bodyStart=leadingThinkingEnd(content);
+ const at=content.indexOf(xml,bodyStart);if(at<0)return false;
+ const before=content.slice(bodyStart,at);const after=content.slice(at+xml.length);
+ // No reasoning is required. At body start, indentation/BOM/blank lines are OK;
+ // ordinary preceding prose still requires a real line boundary.
+ if(before.trim()&&!/\n[ \t]*$/.test(before))return false;
+ if(after&&!/^[ \t]*(?:\r?\n|$)/.test(after))return false;
+ if(insideFence(before)||insideProtectedContainer(before))return false;
+ return true;
+}
 export async function owner(xml:string){
  const none={chatId:'',cardId:'',reason:'无法唯一确认消息归属'};
  if(xml.length<12)return none;
