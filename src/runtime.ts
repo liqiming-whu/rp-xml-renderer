@@ -15,21 +15,40 @@ export function requestReload(){
 export async function cards():Promise<{id:string;name:string}[]>{const m=Java.type('com.ai.assistance.operit.data.preferences.CharacterCardManager').getInstance(Java.getApplicationContext());const xs=await m.callSuspend('getAllCharacterCards');return xs.map((x:any)=>({id:String(x.getId()),name:String(x.getName())}));}
 // Matching the complete XML block against source messages is a conservative compatibility
 // adapter, not authoritative per-render metadata. Duplicate/unknown ownership fails open.
-// A fully closed leading reasoning prefix is not part of the visible body.
-// Compute an offset only: never alter stored content or the XML used for lookup.
-function leadingThinkingEnd(content:string):number {
+// Only complete leading reasoning and known warning controls are transparent to
+// ownership checks. Keep their bytes and host rendering untouched; compute an offset.
+function warningAttributes(attributes:string):boolean {
+ const seen=new Set<string>();let rest=attributes;
+ while(rest.trim()){
+  const match=/^\s+([a-z_][a-z0-9_.:-]*)\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(rest);
+  if(!match)return false;
+  const name=match[1].toLowerCase();
+  if(seen.has(name))return false;
+  seen.add(name);
+  const value=match[2]===undefined?match[3]:match[2];
+  if(name==='type'&&value!=='warning')return false;
+  rest=rest.slice(match[0].length);
+ }
+ return seen.has('type');
+}
+function leadingControlEnd(content:string):number {
  let end=0;
- for(;;){
-  const open=/^\s*<(think|thinking)\s*>/i.exec(content.slice(end));
+ for(let blocks=0;;blocks++){
+  const open=/^\s*<(think|thinking|status)(\s[^<>]*)?>/i.exec(content.slice(end));
   if(!open)return end;
-  const stack=[open[1].toLowerCase()];
-  const tokens=/<(\/?)(think|thinking)\s*>/gi;
+  if(blocks>=128)return -1; // Fail open instead of scanning an unbounded control chain.
+  const tag=open[1].toLowerCase(),attributes=open[2]||'';
+  if(tag==='status'?!warningAttributes(attributes):!!attributes.trim())return end;
+  const stack=[tag];
+  // Each complete control is opaque: examples/fences in it are not visible body.
+  const tokens=tag==='status'?/<(\/?)(status)(?:\s[^<>]*)?>/gi:/<(\/?)(think|thinking)\s*>/gi;
   tokens.lastIndex=end+open[0].length;
   let token:RegExpExecArray|null;let closed=false;
   while((token=tokens.exec(content))){
-   const tag=token[2].toLowerCase();
-   if(token[1]){if(stack.pop()!==tag)return end;}
-   else stack.push(tag);
+   if(/\/\s*>$/.test(token[0]))continue;
+   const name=token[2].toLowerCase();
+   if(token[1]){if(stack.pop()!==name)return end;}
+   else stack.push(name);
    if(!stack.length){end=tokens.lastIndex;closed=true;break;}
   }
   if(!closed)return end;
@@ -46,7 +65,7 @@ function insideFence(text:string):boolean {
  return !!marker;
 }
 function insideProtectedContainer(text:string):boolean {
- const tokens=/<(\/?)(think|thinking|tool|tool_result|html|details)(?:\s[^<>]*)?>/gi;
+ const tokens=/<(\/?)(think|thinking|status|tool|tool_result|html|details)(?:\s[^<>]*)?>/gi;
  const stack:string[]=[];let token:RegExpExecArray|null;
  while((token=tokens.exec(text))){
   if(/\/\s*>$/.test(token[0]))continue;
@@ -57,7 +76,7 @@ function insideProtectedContainer(text:string):boolean {
  return stack.length>0;
 }
 export function isStandalone(content:string,xml:string){
- const bodyStart=leadingThinkingEnd(content);
+ const bodyStart=leadingControlEnd(content);if(bodyStart<0)return false;
  const at=content.indexOf(xml,bodyStart);if(at<0)return false;
  const before=content.slice(bodyStart,at);const after=content.slice(at+xml.length);
  // No reasoning is required. At body start, indentation/BOM/blank lines are OK;

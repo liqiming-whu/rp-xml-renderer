@@ -8,6 +8,7 @@
 - `examples/`、`export-examples.cjs`：10 个可复制示例与导出源。
 - `probes/ui.js`：动态配置导航、四预设和错误恢复的只读宿主探针。
 - `probes/rendering.js`：经典布局与正则配置树探针，不保存用户配置。
+- `probes/retry-controls.js`：已安装模块的 warning/多段思考边界合成探针，只读、不保存配置。
 - `probes/body-boundaries.js`：读取已安装模块，验证思考/非思考正文边界；只用合成输入，不保存配置或写入聊天。
 - `docs/`：玩法、外观、维护和 Bug 记录。
 
@@ -30,17 +31,19 @@ Google R8 8.3.37 放入 `build-tools/r8-8.3.37.jar`（构建依赖，不提交 G
 
 构建先编译 Java/DEX 和 TS，再导出示例、运行全部测试，最后打包；失败即中止，各子进程有超时。构建本身不联网。
 
-输出 `com.operit.rp_xml_renderer-v2.3.3.toolpkg`，仅含 manifest、dist JS 与 DEX，不打包测试、文档和个人配置。ZIP 时间戳可能令重新构建后的整包哈希不同；正式附件以 Release 的 SHA256SUMS 为准。
+输出 `com.operit.rp_xml_renderer-v2.3.4.toolpkg`，仅含 manifest、dist JS 与 DEX，不打包测试、文档和个人配置。ZIP 时间戳可能令重新构建后的整包哈希不同；正式附件以 Release 的 SHA256SUMS 为准。
 
 ## 测试与宿主验证
 
-本地门禁：`test.cjs`、`test-v21.cjs`、`test-v23.cjs`、`test-v231.cjs`、`test-examples.cjs`、`test-v232.cjs`、`test-v233.cjs`。旧版本编号表示回归覆盖来源，不表示仍要求安装旧版。207 项测试包括新安装不绑定、已保存配置不被覆盖、输出原样保留、去重、作用域、迁移、示例运行和导航生命周期。
+本地门禁：`test.cjs`、`test-v21.cjs`、`test-v23.cjs`、`test-v231.cjs`、`test-examples.cjs`、`test-v232.cjs`、`test-v233.cjs`、`test-v234.cjs`。旧版本编号表示回归覆盖来源，不表示仍要求安装旧版。312 项测试（本版新增 105 项）包括新安装不绑定、已保存配置不被覆盖、输出原样保留、去重、作用域、迁移、示例运行和导航生命周期。
 
-安装工具包后，使用 Operit `debug_run_sandbox_script` 的 source_path 执行 Android 可访问的 `probes/ui.js`、`probes/rendering.js` 与 `probes/body-boundaries.js`。它们操作独立配置树，不保存、不向真实模型发送消息；使用后核对 preferencesUnchanged/settingsUnchanged。Node VM 不能替代真实 QuickJS 探针，探针也不能替代屏幕像素或真实聊天效果验收。
+安装工具包后，使用 Operit `debug_run_sandbox_script` 的 source_path 执行 Android 可访问的 `probes/ui.js`、`probes/rendering.js`、`probes/body-boundaries.js` 与 `probes/retry-controls.js`。它们操作独立配置树，不保存、不向真实模型发送消息；使用后核对 preferencesUnchanged/settingsUnchanged。Node VM 不能替代真实 QuickJS 探针，探针也不能替代屏幕像素或真实聊天效果验收。
 
 不要使用个人消息或角色 ID 作为公开测试 fixture。旧设备专用探针和原始开发日志仅本地归档。
 
 ## 配置与升级
+
+- v2.3.4 将前导边界扩展为完整闭合的 think/thinking 与 type=warning 状态序列；严格属性解析、128 块上限，status 加入受保护容器。只计算偏移，不改原文；不改 schema、绑定或脚本。已安装模块 12 项合成边界通过；6 条真实消息（含 1 条 warning 样本）、12 次 onXml 回调均命中预期模式与正确对话；受检配置和源消息指纹未变。运行版本和包逐字节核验通过；用户于 2026-11-02 确认实机验收通过；该反馈针对原问题，不外推为任意模型格式或真实流式请求均已验证。
 
 - v2.3.3 只调整消息边界识别和对应回归；不迁移 schema、不重置规则或动态脚本。最新问题消息通过已安装包真实 onXml 回调只读验证为 collapse；无思考路径另经合成宿主探针验证。用户于 2026-10-31 确认原问题显示正常；不将该反馈外推为所有模型格式均已验证。
 
