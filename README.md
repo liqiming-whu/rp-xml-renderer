@@ -6,7 +6,7 @@ Operit ToolPkg 插件：标签块渲染、标签内正则替换，以及只注�
 - 插件 ID：`com.operit.rp_xml_renderer`
 - 源代码：[liqiming-whu/rp-xml-renderer](https://github.com/liqiming-whu/rp-xml-renderer)
 - 安装包：[GitHub Releases](https://github.com/liqiming-whu/rp-xml-renderer/releases)
-- 许可证尚未选择；公开可见不等于已授予开源许可证。
+- 许可证：[MIT](LICENSE)。
 
 ## 功能
 
